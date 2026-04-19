@@ -21,7 +21,7 @@ const Sidebar: React.FC = () => {
     { to: '/', icon: LayoutDashboard, label: 'Dashboard', group: 'Academy' },
     { to: '/quiz', icon: BrainCircuit, label: 'Quiz Engine', group: 'Academy' },
     { to: '/mentor', icon: MessageSquare, label: 'AI Mentor', group: 'Academy' },
-    { to: '/room', icon: Users, label: 'Study Groups', group: 'Community' },
+    { to: '/room', icon: Users, label: 'Study Rooms', group: 'Community' },
     { to: '/search', icon: Search, label: 'Search', group: 'Academy' },
     { to: '/profile', icon: UserCircle, label: 'Profile', group: 'Community' },
     { to: '/admin/quiz/create', icon: Target, label: 'Create Quiz', group: 'Admin' },
