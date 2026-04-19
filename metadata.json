@@ -1,0 +1,9 @@
+{
+  "name": "Zenith Study",
+  "description": "A comprehensive AI-powered learning platform featuring smart quizzes, an AI mentor, real-time study rooms, and advanced analytics.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": []
+}
