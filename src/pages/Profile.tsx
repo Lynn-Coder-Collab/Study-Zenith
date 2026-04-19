@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAppStore } from '../store/useAppStore';
+import { useAppStore, useUIStore } from '../store/useAppStore';
 import { 
   User as UserIcon, 
   Settings, 
@@ -9,12 +9,16 @@ import {
   ChevronRight,
   Shield,
   Bell,
-  Mail
+  Mail,
+  Moon,
+  Sun,
+  Monitor
 } from 'lucide-react';
 import { motion } from 'motion/react';
 
 const ProfilePage: React.FC = () => {
   const { user } = useAppStore();
+  const { theme, setTheme } = useUIStore();
 
   const achievements = [
     { title: 'Fast Learner', desc: 'Completed 5 quizzes in a day', icon: '⚡', color: 'bg-yellow-50 text-yellow-600' },
@@ -129,6 +133,49 @@ const ProfilePage: React.FC = () => {
                </div>
                <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white rounded-full blur-[80px] opacity-20 group-hover:scale-150 transition-transform duration-700" />
             </div>
+          </div>
+        </div>
+
+        {/* System Settings Section */}
+        <div className="theme-card p-10 space-y-8 col-span-1 md:col-span-2">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-black text-text-primary flex items-center gap-4">
+              <Settings className="w-7 h-7 text-accent" />
+              Interface Protocol
+            </h2>
+            <div className="px-4 py-1.5 bg-surface border border-border rounded-full text-[10px] font-black text-text-secondary uppercase tracking-[0.2em]">
+              Neural Theme Engine
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              { id: 'light', icon: Sun, label: 'Standard (Light)', desc: 'Optimized for high-light environments' },
+              { id: 'dark', icon: Moon, label: 'Stealth (Dark)', desc: 'Reduced neural strain in low light' },
+              { id: 'system', icon: Monitor, label: 'Dynamic (System)', desc: 'Syncs with external environment' }
+            ].map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setTheme(t.id as any)}
+                className={`p-8 rounded-[2.5rem] border-2 transition-all text-left flex flex-col gap-4 group ${
+                  theme === t.id 
+                    ? 'border-accent bg-accent/5 shadow-xl shadow-accent/5' 
+                    : 'border-border bg-bg hover:border-accent/40'
+                }`}
+              >
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${
+                  theme === t.id ? 'bg-accent text-bg' : 'bg-surface text-text-secondary group-hover:text-accent'
+                }`}>
+                  <t.icon className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className={`font-black uppercase tracking-widest text-sm mb-1 ${
+                    theme === t.id ? 'text-accent' : 'text-text-primary'
+                  }`}>{t.label}</div>
+                  <p className="text-xs text-text-secondary font-medium leading-relaxed">{t.desc}</p>
+                </div>
+              </button>
+            ))}
           </div>
         </div>
       </div>

@@ -6,6 +6,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './components/providers/AuthProvider';
+import { ThemeProvider } from './components/providers/ThemeProvider';
 import { useAppStore } from './store/useAppStore';
 import LoginPage from './pages/Login';
 import Sidebar from './components/layout/Sidebar';
@@ -17,6 +18,7 @@ import QuizEngine from './pages/QuizEngine';
 import StudyRoom from './pages/StudyRoom';
 import Search from './pages/Search';
 import Profile from './pages/Profile';
+import QuizCreate from './pages/Admin/QuizCreate';
 
 const Layout = ({ children }: { children: React.ReactNode }) => (
   <div className="min-h-screen bg-slate-50 text-slate-900 flex">
@@ -43,19 +45,22 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 export default function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/quiz" element={<ProtectedRoute><QuizList /></ProtectedRoute>} />
-          <Route path="/quiz/:id" element={<ProtectedRoute><QuizEngine /></ProtectedRoute>} />
-          <Route path="/mentor" element={<ProtectedRoute><Mentor /></ProtectedRoute>} />
-          <Route path="/room" element={<ProtectedRoute><StudyRoom /></ProtectedRoute>} />
-          <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
-          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-        </Routes>
-      </Router>
-      <Toaster position="bottom-right" />
+      <ThemeProvider>
+        <Router>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/quiz" element={<ProtectedRoute><QuizList /></ProtectedRoute>} />
+            <Route path="/quiz/:id" element={<ProtectedRoute><QuizEngine /></ProtectedRoute>} />
+            <Route path="/mentor" element={<ProtectedRoute><Mentor /></ProtectedRoute>} />
+            <Route path="/room" element={<ProtectedRoute><StudyRoom /></ProtectedRoute>} />
+            <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/admin/quiz/create" element={<ProtectedRoute><QuizCreate /></ProtectedRoute>} />
+          </Routes>
+        </Router>
+        <Toaster position="bottom-right" />
+      </ThemeProvider>
     </AuthProvider>
   );
 }

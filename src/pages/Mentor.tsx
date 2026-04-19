@@ -1,19 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Sparkles, User, Bot, Loader2 } from 'lucide-react';
-import { getMentorResponse } from '../services/geminiService';
+import { Send, Sparkles, User, Bot, Loader2, Cpu, Settings } from 'lucide-react';
+import { getAIResponse, AIProvider, AIMessage } from '../services/aiService';
 import Markdown from 'react-markdown';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAppStore } from '../store/useAppStore';
 
-interface Message {
-  role: 'user' | 'assistant';
-  parts: string;
-}
-
 const MentorPage: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<AIMessage[]>([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [provider, setProvider] = useState<AIProvider>('gemini');
   const scrollRef = useRef<HTMLDivElement>(null);
   const { user } = useAppStore();
 
@@ -26,21 +22,21 @@ const MentorPage: React.FC = () => {
   const handleSend = async () => {
     if (!input.trim() || isTyping) return;
 
-    const userMessage: Message = { role: 'user', parts: input };
-    setMessages(prev => [...prev, userMessage]);
+    const userMessage: AIMessage = { role: 'user', content: input };
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
     setInput('');
     setIsTyping(true);
 
     try {
-      const history = messages.map(m => ({ 
-        role: m.role === 'user' ? 'user' : 'model', 
-        parts: m.parts 
-      }));
-      
-      const response = await getMentorResponse(history as any, input);
-      setMessages(prev => [...prev, { role: 'assistant', parts: response }]);
-    } catch (error) {
+      const response = await getAIResponse(newMessages.map(m => ({ 
+        role: m.role, 
+        content: m.content 
+      })), provider);
+      setMessages(prev => [...prev, { role: 'assistant', content: response }]);
+    } catch (error: any) {
       console.error(error);
+      setMessages(prev => [...prev, { role: 'assistant', content: `**Error:** ${error.message}. Please ensure the API key for ${provider} is configured in the Secrets panel.` }]);
     } finally {
       setIsTyping(false);
     }
@@ -48,8 +44,31 @@ const MentorPage: React.FC = () => {
 
   return (
     <div className="flex flex-col h-[calc(100vh-72px)] bg-bg theme-gradient-main">
+      {/* Provider Selector */}
+      <div className="bg-bg/50 border-b border-border px-6 py-3 flex flex-wrap items-center justify-between backdrop-blur-md z-30">
+        <div className="flex items-center gap-2">
+          <Cpu className="w-4 h-4 text-accent" />
+          <span className="text-[10px] font-black uppercase tracking-widest text-text-secondary">AI Protocol:</span>
+        </div>
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+          {(['gemini', 'openrouter', 'groq', 'featherless'] as AIProvider[]).map((p) => (
+            <button
+              key={p}
+              onClick={() => setProvider(p)}
+              className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-tighter transition-all border whitespace-nowrap ${
+                provider === p 
+                  ? 'bg-accent text-bg border-transparent shadow-lg shadow-accent/20' 
+                  : 'text-text-secondary border-border hover:border-accent hover:text-text-primary bg-surface/30'
+              }`}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 scroll-smooth" ref={scrollRef}>
-        <div className="max-w-4xl mx-auto space-y-8 pb-32 pt-8">
+        <div className="max-w-4xl mx-auto space-y-8 pb-32 pt-4">
           {messages.length === 0 && (
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }}
@@ -60,7 +79,7 @@ const MentorPage: React.FC = () => {
                 <Sparkles className="w-10 h-10" />
               </div>
               <h1 className="text-4xl font-black text-text-primary tracking-tight mb-3">Zenith AI Mentor</h1>
-              <p className="text-text-secondary font-medium text-lg max-w-md">Your personal high-performance learning companion. Ready to review concepts or build a study plan?</p>
+              <p className="text-text-secondary font-medium text-lg max-w-md">Your personal high-performance learning companion powered by {provider.toUpperCase()}.</p>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-12 w-full max-w-2xl px-4">
                 {[
@@ -106,7 +125,7 @@ const MentorPage: React.FC = () => {
                     : 'bg-surface border-border text-text-primary rounded-tl-none'
                 }`}>
                   <div className={`prose prose-sm max-w-none ${message.role === 'user' ? 'prose-invert text-bg' : 'prose-invert text-text-primary'}`}>
-                    <Markdown>{message.parts}</Markdown>
+                    <Markdown>{message.content}</Markdown>
                   </div>
                 </div>
               </motion.div>
@@ -136,7 +155,7 @@ const MentorPage: React.FC = () => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="Ask Zenith a high-performance study question..."
+              placeholder={`Ask Zenith ${provider.toUpperCase()} a high-performance study question...`}
               className="w-full bg-surface border border-border text-text-primary rounded-[1.5rem] pl-6 pr-16 py-5 focus:ring-4 focus:ring-accent/10 focus:border-accent transition-all shadow-2xl outline-none placeholder:text-text-secondary font-medium"
             />
             <button
@@ -147,9 +166,14 @@ const MentorPage: React.FC = () => {
               <Send className="w-5 h-5" />
             </button>
           </div>
-          <p className="text-[10px] text-center mt-4 text-text-secondary font-bold uppercase tracking-[0.2em]">
-            Neural Processing Active • Zenith Lvl 42 Engine
-          </p>
+          <div className="mt-4 flex flex-col items-center gap-1">
+            <p className="text-[10px] text-center text-text-secondary font-bold uppercase tracking-[0.2em]">
+              Neural Processing Active • Zenith Lvl 42 Engine
+            </p>
+            <p className="text-[8px] text-text-secondary/50 uppercase tracking-widest">
+              Server-Side Secure Protocol • Keys Hidden
+            </p>
+          </div>
         </div>
       </div>
     </div>
