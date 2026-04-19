@@ -1,22 +1,40 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { signInWithPopup } from 'firebase/auth';
 import { auth, googleProvider } from '../lib/firebase/client';
-import { LogIn } from 'lucide-react';
+import { LogIn, Loader2, Sparkles } from 'lucide-react';
 import { motion } from 'motion/react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const handleGoogleLogin = async () => {
+    if (isLoggingIn) return;
+    
+    setIsLoggingIn(true);
     try {
       await signInWithPopup(auth, googleProvider);
       toast.success('Successfully logged in!');
       navigate('/');
     } catch (error: any) {
-      console.error(error);
-      toast.error('Failed to log in: ' + error.message);
+      console.error('Login Error details:', {
+        code: error.code,
+        message: error.message,
+        hostname: window.location.hostname,
+        origin: window.location.origin
+      });
+      
+      if (error.code === 'auth/unauthorized-domain') {
+        toast.error(`Domain not authorized: ${window.location.hostname}. Please copy this exact text to Firebase Authorized Domains.`);
+      } else if (error.code === 'auth/popup-closed-by-user') {
+        toast.error('Sign-in cancelled. Please try again.');
+      } else {
+        toast.error('Failed to log in: ' + error.message);
+      }
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
@@ -34,7 +52,9 @@ const LoginPage: React.FC = () => {
       >
         <div className="text-center space-y-8">
           <div className="mx-auto w-16 h-16 bg-gradient-to-br from-accent to-success rounded-2xl flex items-center justify-center shadow-xl shadow-accent/20 rotate-3">
-             <div className="w-8 h-8 rounded-lg bg-bg/20 backdrop-blur-sm" />
+             <div className="w-8 h-8 rounded-lg bg-bg/20 backdrop-blur-sm flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-white" />
+             </div>
           </div>
           
           <div className="space-y-2">
@@ -45,19 +65,24 @@ const LoginPage: React.FC = () => {
           <div className="space-y-4 pt-4">
             <button
               onClick={handleGoogleLogin}
-              className="w-full bg-text-primary text-bg py-4 px-6 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-white transition-all active:scale-95 shadow-xl"
+              disabled={isLoggingIn}
+              className="w-full bg-text-primary text-bg py-4 px-6 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-white transition-all active:scale-95 shadow-xl disabled:opacity-70 disabled:cursor-not-allowed group"
             >
-              <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5 transition-transform group-hover:scale-110" />
-              Continue with Google
+              {isLoggingIn ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5 transition-transform group-hover:scale-110" />
+              )}
+              {isLoggingIn ? 'Establishing Link...' : 'Continue with Google'}
             </button>
             <p className="text-[11px] text-text-secondary uppercase tracking-widest font-black leading-none py-2">
-              Trusted by 10k+ Students
+              Neural Network Ready
             </p>
           </div>
 
           <div className="pt-4 grid grid-cols-3 gap-3">
              {[1,2,3].map(i => (
-               <div key={i} className="h-0.5 bg-border rounded-full opacity-50" />
+                <div key={i} className="h-0.5 bg-border rounded-full opacity-50" />
              ))}
           </div>
         </div>
