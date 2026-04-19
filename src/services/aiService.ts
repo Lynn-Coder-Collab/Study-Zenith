@@ -7,7 +7,7 @@ export interface AIMessage {
 
 export const getAIResponse = async (
   messages: AIMessage[], 
-  provider: AIProvider = 'gemini',
+  provider: AIProvider = 'groq',
   model?: string
 ) => {
   try {
