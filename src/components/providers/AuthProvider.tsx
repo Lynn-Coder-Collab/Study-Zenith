@@ -27,12 +27,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               email: firebaseUser.email || '',
               displayName: firebaseUser.displayName || 'Learner',
               photoURL: firebaseUser.photoURL || '',
-              role: 'student',
+              role: 'developer',
               stats: {
-                streak: 0,
-                points: 0,
-                level: 1,
-                studyTimeMinutes: 0
+                streak: 100,
+                points: 999,
+                level: 99,
+                studyTimeMinutes: 369,821
               },
               preferences: {
                 theme: 'system',
